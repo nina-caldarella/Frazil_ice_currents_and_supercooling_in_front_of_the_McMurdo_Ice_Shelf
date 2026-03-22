@@ -249,9 +249,8 @@ def subtract_background(path_v, video_file, start_time):
 
         # Convert the average image to uint8 
         average_image = np.uint8(average_image) 
+        cv2.imwrite(os.path.join(output_dir, "background.jpg"), average_image)
         
-        cv2.imwrite(os.path.join(output_dir, "background.jpg"))
-
         # Initialize CLAHE (Contrast Limited Adaptive Histogram Equalization) 
         clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8)) 
 
@@ -329,37 +328,6 @@ def mp4_from_processed_frames(path_processed):
 
         video.release()
         print(f"Video saved as {output_video}")
-
-
-def analyze_IcefinCam_old(video_file, time_sel):
-    mean_size = []
-    std_size = []
-    mean_FIC = []
-    std_FIC = []
-    for i in range(len(time_sel)):
-        start_time = time_sel[i]
-        ds_sizes = xr.open_dataset(os.path.join(path_s, video_file[:-4]+"_"+str(int(start_time))+".nc"))
-        tau = (1/30) # Frazer et al. 2020
-        # tau = 0.55 # from one of the data sets
-        d = (ds_sizes.length_major_axis.data + ds_sizes.length_minor_axis.data) / 2
-        # FIX-ME: this DoF is giving strange results
-        DoF = 0.143 # m 
-        h = 1.4 # m
-        w = 2.5 # m
-        Rhoi=917 # kg/m3
-        Vice = (4/3)*np.pi*(d/2)**2*(d*tau)/2
-        m_ice = Rhoi * Vice # mass of ice in kg
-        Vtot = h * w * DoF # imaged volume in m^3
-        FIC = m_ice/Vtot
-    
-        # calculate statistics and append
-        mean_size.append(np.nanmean(d))
-        std_size.append(np.nanstd(d))
-        mean_FIC.append(np.nanmean(FIC))
-        std_FIC.append(np.nanstd(std_FIC))
-        print("mean FIC ", np.mean(np.array(mean_FIC))*1e3, " mg/L") 
-        print("mean diameter ", np.mean(np.array(mean_size)*1e3), " mm")
-    return mean_size, std_size, mean_FIC, std_FIC 
 
 
 #if __name__ == "main":

@@ -45,7 +45,6 @@ def frazil_spectrum(path_v, video_file, start_time, thresh=40, retrieval_mode="R
     )
     # Map retrieval mode
     mode = cv2.RETR_TREE if str(retrieval_mode).upper() == "RETR_TREE" else cv2.RETR_EXTERNAL
-
     # If dataset exists, return it
     if os.path.exists(out_nc):
         ds = xr.open_dataset(out_nc, engine="netcdf4")
@@ -136,8 +135,13 @@ def frazil_spectrum(path_v, video_file, start_time, thresh=40, retrieval_mode="R
             if not os.path.exists(os.path.join(binary_path, "with_contours")):
                 os.makedirs(binary_path, exist_ok=True)
                 os.makedirs(os.path.join(binary_path, "with_contours"), exist_ok=True)
-                #cv2.imwrite(os.path.join(binary_path, "with_contours", f"{im_count}.jpg"), binary_rgb)
-                #cv2.imwrite(os.path.join(binary_path, f"{im_count}.jpg"), binary_image)
+            if im_count==1:
+                print(os.path.join(binary_path, "with_contours", f"{im_count}.jpg"))
+                cv2.imwrite(os.path.join(binary_path, "with_contours", f"{im_count}.jpg"), binary_rgb)
+                print(os.path.join(binary_path, f"{im_count}.jpg"))
+                cv2.imwrite(os.path.join(binary_path, f"{im_count}.jpg"), binary_image)
+            #else:
+                #os.remove(processed_image_path)
 
             im_count += 1
 
