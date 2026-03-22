@@ -1,0 +1,15 @@
+2018/Deployment01  
+2018/Deployment02  
+2018/Deployment03  
+2018/DeploymentLog  
+2018/LogFiles
+__pycache__
+CATS2008
+*.png
+*.eps
+sample*
+test*
+old/*.mat
+*.ipynb_checkpoints*
+*.swp
+*.asv
