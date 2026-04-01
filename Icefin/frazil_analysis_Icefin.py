@@ -13,7 +13,7 @@ import numpy as np
 import cv2
 import xarray as xr
 
-def frazil_spectrum(path_v, video_file, start_time, thresh=40, retrieval_mode="RETR_TREE"):
+def frazil_spectrum(path_v, video_file, start_time, thresh=40, masked_pixels=341600, retrieval_mode="RETR_TREE"):
     """
     Estimate frazil crystal geometry from Icefin images scaled with the brick.
 
@@ -30,6 +30,7 @@ def frazil_spectrum(path_v, video_file, start_time, thresh=40, retrieval_mode="R
     """
     # Imaging parameters 
     scale = 2.5 / 1920.0  # metres per pixel
+    total_pixels_no_mask = (1080*1920)-masked_pixels
 
     # Paths 
     image_folder = os.path.join(path_v, video_file[:-10] + "_frames_" + str(start_time))
@@ -72,7 +73,7 @@ def frazil_spectrum(path_v, video_file, start_time, thresh=40, retrieval_mode="R
             _, binary = cv2.threshold(blurred, thresh, 255, cv2.THRESH_BINARY)
             
             # Relative pixel area (fraction in [0, 1])
-            rel_area = cv2.countNonZero(binary) / binary.size
+            rel_area = cv2.countNonZero(binary) / total_pixels_no_mask
             rel_areas.append(rel_area)
             contours, _ = cv2.findContours(binary, mode, cv2.CHAIN_APPROX_SIMPLE)
             raw_counts.append(len(contours))
@@ -136,19 +137,17 @@ def frazil_spectrum(path_v, video_file, start_time, thresh=40, retrieval_mode="R
             if im_count==1:
                 cv2.imwrite(os.path.join(binary_path, "with_contours", f"{im_count}.jpg"), binary_rgb)
                 cv2.imwrite(os.path.join(binary_path, f"{im_count}.jpg"), binary_image)
-            else:
-                os.remove(processed_image_path)
+#            else:
+#                os.remove(processed_image_path)
 
             im_count += 1
 
         # ---------- Build dataset  ----------
         frame_time = np.arange(len(rel_area_pct)) * (1/30.0)
         frame_number = np.arange(len(rel_area_pct))
-        fractional_frazil_area = np.array(rel_area_pct) / (1080 * 1920)
 
         ds = xr.Dataset(
             {
-                "fractional_frazil_area": (["frame_number"], fractional_frazil_area),
                 "length_major_axis": (["frame_number", "crystal_number"], length_major_axis),
                 "rel_area": (["frame_number"], rel_area_pct),
             },
