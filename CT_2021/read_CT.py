@@ -59,7 +59,7 @@ def read_single_cnv(path,file):
 def read_write_all_cnv(path, netcdf=True):
     # select only CNV and sort file names
     files = [ f for f in os.listdir(path) if f.endswith('.cnv') ]
-    files.sort(key=lambda f: int(re.sub('\D', '', f)))
+    files.sort(key=lambda f: int(re.sub('\\D', '', f)))
     # read all files and store in dataframe
     if not files:
         print("The file list is empty.")

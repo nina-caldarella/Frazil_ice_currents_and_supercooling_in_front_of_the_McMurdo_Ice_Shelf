@@ -120,42 +120,6 @@ def pressure_uncertainty_teos10(SA, CT, p, uP, dp=0.01):
 
     return uTf_p, urho_p
 
-def uncertainty_SA_from_conductivity(
-    C_Sm, CT, p, uC_Sm,
-    lon, lat,
-    n_samples=5000, seed=0, clip_C_positive=True
-):
-    """
-    Scalar SA uncertainty propagated from conductivity uncertainty.
-    """
-
-    rng = np.random.default_rng(seed)
-
-    # Representative state
-    C0  = float(np.nanmedian(C_Sm))
-    CT0 = float(np.nanmedian(CT))
-    P0  = float(np.nanmedian(p))
-
-    uC  = float(uC_Sm)
-
-    # Monte Carlo on conductivity
-    C_s = rng.normal(C0, uC, size=n_samples)
-    if clip_C_positive:
-        C_s = np.maximum(C_s, np.finfo(float).tiny)
-
-    # C → SP → SA
-    SP_s = gsw.SP_from_C(10.0 * C_s, CT0, P0)
-    SA_s = gsw.SA_from_SP(SP_s, P0, lon, lat)
-
-    SA0 = gsw.SA_from_SP(
-        gsw.SP_from_C(10.0 * C0, CT0, P0),
-        P0, lon, lat
-    )
-
-    uSA = SA_s.std(ddof=1)
-
-    return SA0, uSA
-
 def uncertainty_Tf_rho_SA(
     SA, CT, C_Sm, p, uCT, uC_Sm, lon, lat,
     n_samples=5000, seed=0, clip_C_positive=True
